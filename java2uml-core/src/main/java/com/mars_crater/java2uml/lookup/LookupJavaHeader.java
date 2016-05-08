@@ -63,8 +63,9 @@ public class LookupJavaHeader {
                 }
 
                 //TODO Insert Class, extends and imports here.
-                if (lineTrimmed.startsWith("public class")) {
+                if (lineTrimmed.startsWith("public")) {
                     final String[] classMetadata = Sufixes.getClassExtendsImports(lineTrimmed);
+                    break;
                 }
 
             }
