@@ -9,5 +9,7 @@ public class InterfaceVO implements INodeType {
 
     private String interfaceName;
 
+    private String packageName;
+
     private List<InterfaceVO> extendInterfaces;
 }

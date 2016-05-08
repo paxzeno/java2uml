@@ -35,23 +35,46 @@ public class LookupJavaHeader {
 
     public List<String> getHeader() throws IOException {
 
-        //Map <Package, List<INodeType>> (package name, list of classes under that package)
+        //Map <Package, List<NodeObject>> (package name, list of classes under that package)
         final Map<String, List<INodeType>> packageMap = new HashMap<>();
         for (File javaFile : this.javaFiles) {
-            final List<INodeType> packages = new ArrayList<>();
+            //Map <ImportPackage, List<ImportClassName>>
+            final Map<String, List<String>> importsMap = new HashMap<>();
             final List<String> classLines = Files.readAllLines(javaFile.toPath());
+            String packageName = null;
 
             for (String classLine : classLines) {
-                if (classLine.trim().startsWith("package")) {
-
+                final String lineTrimmed = classLine.trim();
+                if (packageName == null && lineTrimmed.startsWith("package")) {
+                    packageName = Sufixes.removeObsoletePrefixAndLastChar(lineTrimmed, "package");
                 }
+
+                if (lineTrimmed.startsWith("import")) {
+                    final String[] packageNClassName = Sufixes.getImportPackageAndClassName(lineTrimmed);
+                    final String importPackage = packageNClassName[0];
+                    final String importClassName = packageNClassName[1];
+                    if (importsMap.containsKey(importPackage)) {
+                        importsMap.get(importPackage).add(importClassName);
+                    } else {
+                        final List<String> classImportsName = new ArrayList<>();
+                        classImportsName.add(importClassName);
+                        importsMap.put(importPackage, classImportsName);
+                    }
+                }
+
+                //TODO Insert Class, extends and imports here.
+                if (lineTrimmed.startsWith("public class")) {
+                    final String[] classMetadata = Sufixes.getClassExtendsImports(lineTrimmed);
+                }
+
             }
 
-            final List<String> packageLine = stream.filter(line -> line.startsWith("package")).collect(Collectors.toList());
-            packages.add(packageLine.get(0));
-        }
+            //TODO add to packages map object enriched with imports. first assume normal class.
+            final ClassVO clazzVO = new ClassVO();
 
-        return packages;
+            System.out.println("break point");
+        }
+        return null;
     }
 
     public List<String> getImports() throws IOException {

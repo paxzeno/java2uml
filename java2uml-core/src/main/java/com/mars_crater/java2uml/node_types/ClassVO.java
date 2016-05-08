@@ -9,7 +9,51 @@ public class ClassVO implements INodeType {
 
     private String classname;
 
-    private ClassVO extendsClassName;
+    private String packageName;
 
-    private List<InterfaceVO> implementsClassNames;
+    private ClassVO extendsClass;
+
+    private List<ClassVO> importClasses;
+
+    private List<InterfaceVO> implementsClasses;
+
+    public String getClassname() {
+        return classname;
+    }
+
+    public void setClassname(String classname) {
+        this.classname = classname;
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+
+    public ClassVO getExtendsClass() {
+        return extendsClass;
+    }
+
+    public void setExtendsClass(ClassVO extendsClass) {
+        this.extendsClass = extendsClass;
+    }
+
+    public List<ClassVO> getImportClasses() {
+        return importClasses;
+    }
+
+    public void setImportClasses(List<ClassVO> importClasses) {
+        this.importClasses = importClasses;
+    }
+
+    public List<InterfaceVO> getImplementsClasses() {
+        return implementsClasses;
+    }
+
+    public void setImplementsClasses(List<InterfaceVO> implementsClasses) {
+        this.implementsClasses = implementsClasses;
+    }
 }
