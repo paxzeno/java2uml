@@ -1,4 +1,4 @@
-package com.mars_crater.java2uml.node_types;
+package com.mars_crater.java2uml.entities;
 
 /**
  * Created by ateixeira on 08-05-2016.

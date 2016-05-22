@@ -1,9 +1,7 @@
 package com.mars_crater.java2uml.utils;
 
-import com.mars_crater.java2uml.node_types.ObjectTypeEnum;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by ateixeira on 07-05-2016.
@@ -42,60 +40,52 @@ public final class Sufixes {
     }
 
     public static String[] getImportPackageAndClassName(String importLine) {
-        return new String[]{getImportPackage(importLine), getImportClassName(importLine)};
+        return new String[]{getImportClassName(importLine), getImportPackage(importLine)};
     }
 
     public static String[] getClassExtendsImports(String lineTrimmed) {
 
-        //FIXME Implement a new parsing logic this one is bogus, split line a iterate it differently
-        String className = null;
-        String extendsClass = null;
-        final List<String> interfaceClasses = new ArrayList<>();
-        ObjectTypeEnum objectType = null;
-        final String[] line = lineTrimmed.split(" ");
-        //BOGUS FIXME class extends and implements can be in two different lines.
-        for (String word : line) {
-            switch (word) {
-                case "public":
-                case "final":
-                case "extends":
-                case "implements":
-                case ",":
-                case "{":
-                    break;
-                case "class":
-                    objectType = ObjectTypeEnum.CLASS;
-                    break;
-                case "interface":
-                    objectType = ObjectTypeEnum.INTERFACE;
-                    break;
-                case "enum":
-                    objectType = ObjectTypeEnum.ENUM;
-                    break;
-                default:
-                    if (className == null) {
-                        className = word;
-                    } else if (extendsClass == null && !isInterfaceOrEnumClass(objectType)) {
-                        extendsClass = word;
-                    } else {
-                        interfaceClasses.add(word);
-                    }
-            }
+        //Class|Interface|Enum name
+        String className = getNameBasedOnRegexPattern(lineTrimmed, "(?<=class |interface |enum ).+?(?= extends| implements| \\{)");
+        Pattern patternObjectName;
+        Matcher matchesObjectName;
+
+        //Get Object type e.g. Class, Interface, Enum
+        patternObjectName = Pattern.compile(".+?(?=class|interface|enum)(.*)( "+className+")");
+        matchesObjectName = patternObjectName.matcher(lineTrimmed);
+
+        String objectType = null;
+        while (matchesObjectName.find()) {
+            objectType = matchesObjectName.group(1);
         }
 
-        String interfaceClassesArr = null;
-        if (!interfaceClasses.isEmpty()) {
-            final StringBuilder interfacesArray = new StringBuilder();
-            for (String interfaceClass : interfaceClasses) {
-                interfacesArray.append(interfaceClass).append(",");
-            }
-            interfaceClassesArr = interfacesArray.toString();
+        //Extension name
+        patternObjectName = Pattern.compile("(?<=extends ).+?(?= implements| \\{)");
+        matchesObjectName = patternObjectName.matcher(lineTrimmed);
+        String extendsClassName = null;
+        while (matchesObjectName.find()) {
+            extendsClassName = matchesObjectName.group(0);
         }
 
-        return new String[]{className, extendsClass, interfaceClassesArr};
+        //Implementations names
+        patternObjectName = Pattern.compile("(?<=implements ).+?(?= \\{)");
+        matchesObjectName = patternObjectName.matcher(lineTrimmed);
+        String implementsClassName = null;
+        while (matchesObjectName.find()) {
+            implementsClassName = matchesObjectName.group(0);
+        }
+
+        return new String[]{objectType, className, extendsClassName, implementsClassName};
     }
 
-    private static boolean isInterfaceOrEnumClass(ObjectTypeEnum objectType) {
-        return ObjectTypeEnum.INTERFACE.equals(objectType) || ObjectTypeEnum.ENUM.equals(objectType);
+    private static String getNameBasedOnRegexPattern(String lineTrimmed, String regexPattern) {
+        Pattern patternObjectName = Pattern.compile(regexPattern);
+        Matcher matchesObjectName = patternObjectName.matcher(lineTrimmed);
+
+        String className = null;
+        while (matchesObjectName.find()) {
+            className = matchesObjectName.group(0);
+        }
+        return className;
     }
 }

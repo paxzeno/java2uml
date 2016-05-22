@@ -1,7 +1,8 @@
 package com.mars_crater.java2uml.lookup;
 
-import com.mars_crater.java2uml.node_types.ClassVO;
-import com.mars_crater.java2uml.node_types.INodeType;
+import com.mars_crater.java2uml.entities.INodeType;
+import com.mars_crater.java2uml.entities.ObjectNode;
+import com.mars_crater.java2uml.services.ObjectFactory;
 import com.mars_crater.java2uml.utils.Sufixes;
 
 import java.io.File;
@@ -19,7 +20,7 @@ import java.util.stream.Stream;
  */
 public class LookupJavaHeader {
 
-    private static final String PROJECT_PATH = "C:/Development/Src/FinancialAdvisor";
+    private static final String PROJECT_PATH = "C:\\Users\\z003jyda\\nwr\\FinancialAdvisor";
 
     private static final String MASK = "java";
 
@@ -33,10 +34,10 @@ public class LookupJavaHeader {
         }
     }
 
-    public List<String> getHeader() throws IOException {
+    public List<String> getHeader() throws Exception {
 
-        //Map <Package, List<NodeObject>> (package name, list of classes under that package)
-        final Map<String, List<INodeType>> packageMap = new HashMap<>();
+        //Map <Package, Map<ClassName, NodeObject>> (package name, list of classes under that package)
+        final Map<String, Map<String, INodeType>> packageMap = new HashMap<>();
         for (File javaFile : this.javaFiles) {
             //Map <ImportPackage, List<ImportClassName>>
             final Map<String, List<String>> importsMap = new HashMap<>();
@@ -51,29 +52,26 @@ public class LookupJavaHeader {
 
                 if (lineTrimmed.startsWith("import")) {
                     final String[] packageNClassName = Sufixes.getImportPackageAndClassName(lineTrimmed);
-                    final String importPackage = packageNClassName[0];
-                    final String importClassName = packageNClassName[1];
-                    if (importsMap.containsKey(importPackage)) {
-                        importsMap.get(importPackage).add(importClassName);
+                    final String importClassName = packageNClassName[0];
+                    final String importPackage = packageNClassName[1];
+                    if (importsMap.containsKey(importClassName)) {
+                        importsMap.get(importClassName).add(importPackage);
                     } else {
                         final List<String> classImportsName = new ArrayList<>();
-                        classImportsName.add(importClassName);
-                        importsMap.put(importPackage, classImportsName);
+                        classImportsName.add(importPackage);
+                        importsMap.put(importClassName, classImportsName);
                     }
                 }
 
                 //TODO Insert Class, extends and imports here.
                 if (lineTrimmed.startsWith("public")) {
-                    final String[] classMetadata = Sufixes.getClassExtendsImports(lineTrimmed);
+                    ObjectFactory.createObjects(packageMap, packageName, importsMap, lineTrimmed);
                     break;
                 }
 
             }
 
-            //TODO add to packages map object enriched with imports. first assume normal class.
-            final ClassVO clazzVO = new ClassVO();
-
-            System.out.println("break point");
+            System.out.println("");
         }
         return null;
     }
@@ -91,7 +89,7 @@ public class LookupJavaHeader {
         return imports;
     }
 
-    public List<ClassVO> getClassWhatItExtentesAndImplements() {
+    public List<ObjectNode> getClassWhatItExtentesAndImplements() {
         return null;
     }
 
